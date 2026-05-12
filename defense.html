@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assessment Defense, Garbage Classification and Sarcasm Detection</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4.6.1/dist/reveal.css" />
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4.6.1/dist/theme/white.css" />
+
+  <style>
+    :root {
+      --green:    #2a6e45;
+      --green-lt: #e6f2eb;
+      --green-bd: #b8d9c4;
+      --blue:     #2c5e8a;
+      --blue-lt:  #e8f0f7;
+      --blue-bd:  #b8cce0;
+      --text:     #1c2b22;
+      --muted:    #547060;
+      --rule:     #d4e8dc;
+    }
+
+    .reveal {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: #fff;
+    }
+    .reveal .slides section {
+      box-sizing: border-box;
+      padding: 38px 48px;
+      text-align: left;
+    }
+    .reveal h1, .reveal h2, .reveal h3 {
+      text-transform: none;
+      letter-spacing: 0;
+      margin: 0;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+    }
+    .reveal p { margin: 0; }
+    .reveal ul { list-style: none; margin: 0; padding: 0; }
+    .reveal li { margin: 0; }
+
+    .slide-header {
+      border-bottom: 2px solid var(--rule);
+      padding-bottom: 10px;
+      margin-bottom: 22px;
+    }
+    .slide-header .label {
+      display: block;
+      font-size: 0.36em;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+    .slide-header h2 { font-size: 0.9em; }
+
+    .s-title {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center !important;
+    }
+    .s-title .t-overline {
+      font-size: 0.38em;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 14px;
+    }
+    .s-title h1 {
+      font-size: 1.3em;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .s-title h1 em {
+      color: var(--green);
+      font-style: normal;
+    }
+    .s-title .t-sub {
+      font-size: 0.42em;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+    .divider {
+      width: 44px;
+      height: 3px;
+      background: var(--green);
+      border-radius: 2px;
+      margin: 0 auto 22px;
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      width: 680px;
+      margin-bottom: 18px;
+    }
+    .team-card {
+      border: 1px solid var(--green-bd);
+      border-radius: 6px;
+      padding: 9px 8px;
+      background: var(--green-lt);
+    }
+    .team-card .tc-name {
+      display: block;
+      font-size: 0.4em;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .s-title .t-meta {
+      font-size: 0.36em;
+      color: var(--muted);
+    }
+
+    .task-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .task-card {
+      border: 1px solid var(--green-bd);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .task-card.nlp { border-color: var(--blue-bd); }
+    .task-card .th {
+      background: var(--green);
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 0.42em;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .task-card.nlp .th { background: var(--blue); }
+    .task-card .tb {
+      padding: 12px 16px;
+      background: #fff;
+    }
+    .task-card .tb .row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.4em;
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--rule);
+    }
+    .task-card .tb .row:last-child { border-bottom: none; }
+    .task-card .tb .row .k {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .task-card .tb .row .v {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .task-card .tb .models {
+      margin-top: 8px;
+      font-size: 0.4em;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .task-card .tb .models strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .person-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .res-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .res-card {
+      border: 1px solid var(--green-bd);
+      border-radius: 7px;
+      overflow: hidden;
+    }
+    .res-card.nlp { border-color: var(--blue-bd); }
+    .res-card .rh {
+      background: var(--green-lt);
+      border-bottom: 1px solid var(--green-bd);
+      padding: 6px 12px;
+      font-size: 0.36em;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .res-card.nlp .rh {
+      background: var(--blue-lt);
+      border-bottom-color: var(--blue-bd);
+      color: var(--blue);
+    }
+    .res-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.34em;
+      table-layout: fixed;
+    }
+    .res-table col.c-model { width: 56%; }
+    .res-table col.c-num { width: auto; }
+    .res-table th, .res-table td {
+      padding: 5px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--rule);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .res-table th {
+      color: var(--muted);
+      font-weight: 600;
+      background: #fafcfb;
+    }
+    .res-table th.num, .res-table td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .res-table tr.best td {
+      background: var(--green-lt);
+      font-weight: 700;
+    }
+    .res-card.nlp .res-table tr.best td {
+      background: var(--blue-lt);
+    }
+    .res-table tr:last-child td { border-bottom: none; }
+    .insight-box {
+      background: var(--green-lt);
+      border-left: 4px solid var(--green);
+      border-radius: 0 6px 6px 0;
+      padding: 9px 14px;
+      font-size: 0.4em;
+      line-height: 1.55;
+      color: var(--text);
+    }
+    .insight-box strong { color: var(--green); font-weight: 700; }
+
+    .ins-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .ins-cell {
+      border: 1px solid var(--green-bd);
+      border-radius: 7px;
+      padding: 12px 14px;
+      background: #fff;
+    }
+    .ins-cell .ic-title {
+      font-size: 0.38em;
+      font-weight: 700;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .ins-cell .ic-text {
+      font-size: 0.4em;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .s-close {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center !important;
+    }
+    .s-close .cl-label {
+      font-size: 0.38em;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 14px;
+    }
+    .s-close h2 {
+      font-size: 1.3em;
+      margin-bottom: 18px;
+    }
+    .s-close .summary {
+      max-width: 620px;
+      font-size: 0.45em;
+      line-height: 1.55;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+    .s-close .cl-meta {
+      font-size: 0.38em;
+      color: var(--muted);
+    }
+
+    .bar-chart {
+      padding: 10px 14px 12px;
+      background: #fff;
+    }
+    .bar-cap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.3em;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .bar-cap .legend { display: inline-flex; gap: 10px; letter-spacing: 0.04em; }
+    .bar-cap .legend .lg { display: inline-flex; align-items: center; gap: 4px; }
+    .bar-cap .legend .sw {
+      display: inline-block;
+      width: 10px;
+      height: 6px;
+      border-radius: 2px;
+      background: #f59e0b;
+    }
+    .bar-cap .legend .sw.test { background: #7c3aed; }
+    .bar-cap .legend .sw.f1 { background: #ec4899; }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 34% 1fr;
+      align-items: center;
+      column-gap: 10px;
+      padding: 5px 0;
+      font-size: 0.34em;
+      border-bottom: 1px dashed var(--rule);
+    }
+    .bar-row:last-child { border-bottom: none; }
+    .bar-label {
+      color: var(--text);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .bar-mini {
+      display: grid;
+      grid-template-columns: 22px 1fr 30px;
+      align-items: center;
+      gap: 6px;
+    }
+    .bar-key {
+      font-size: 0.78em;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .bar-track {
+      position: relative;
+      height: 7px;
+      background: #f1f5f3;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #7c3aed;
+      border-radius: 4px;
+    }
+    .bar-fill.train { background: #f59e0b; }
+    .bar-fill.f1 { background: #ec4899; }
+    .bar-row.best .bar-label { font-weight: 700; color: var(--green); }
+    .res-card.nlp .bar-row.best .bar-label { color: var(--blue); }
+    .bar-val {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.92em;
+    }
+
+    .reveal .progress { color: var(--green); height: 3px; }
+    .reveal .controls { color: var(--green); }
+    .reveal .slide-number {
+      font-size: 11px;
+      color: var(--muted);
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- 1. TITLE -->
+    <section class="s-title">
+      <p class="t-overline">6CS012 / Artificial Intelligence and Machine Learning</p>
+      <h1>Garbage Classification <em>and</em> Sarcasm Detection<br><em>Assessment Defense</em></h1>
+      <p class="t-sub">Vision &nbsp;&middot;&nbsp; NLP &nbsp;&middot;&nbsp; Herald College Kathmandu &nbsp;&middot;&nbsp; May 2026</p>
+      <div class="divider"></div>
+      <div class="team-grid">
+        <div class="team-card"><span class="tc-name">Rahul Dev Banjara</span></div>
+        <div class="team-card"><span class="tc-name">Pratik Dhimal</span></div>
+        <div class="team-card"><span class="tc-name">Prajwal Dahal</span></div>
+        <div class="team-card"><span class="tc-name">Ankit Guragain</span></div>
+      </div>
+    </section>
+
+    <!-- 2. TASKS OVERVIEW -->
+    <section>
+      <div class="slide-header">
+        <span class="label">01 / Tasks</span>
+      </div>
+      <div class="task-cols">
+        <div class="task-card">
+          <div class="th">CV, Garbage Classification</div>
+          <div class="tb">
+            <div class="row"><span class="k">Source</span><span class="v">Kaggle (garbage-classification-v2)</span></div>
+            <div class="row"><span class="k">Images</span><span class="v">13,348</span></div>
+            <div class="row"><span class="k">Classes</span><span class="v">10</span></div>
+            <div class="row"><span class="k">Image size</span><span class="v">224 x 224</span></div>
+            <p class="models"><strong>Classes:</strong> battery, biological, cardboard, clothes, glass, metal, paper, plastic, shoes, trash</p>
+          </div>
+        </div>
+        <div class="task-card nlp">
+          <div class="th">NLP, Sarcasm Detection</div>
+          <div class="tb">
+            <div class="row"><span class="k">Source</span><span class="v">Kaggle (Sarcasm Headlines)</span></div>
+            <div class="row"><span class="k">Headlines</span><span class="v">28,619</span></div>
+            <div class="row"><span class="k">Task</span><span class="v">Binary (is_sarcastic)</span></div>
+            <div class="row"><span class="k">Split</span><span class="v">22,895 train, 5,724 test</span></div>
+            <p class="models"><strong>Label:</strong> 1 if sarcastic, 0 if not. Short news headlines, one per row.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PRAJWAL -->
+    <section>
+      <div class="slide-header">
+        <span class="label">02 / Results</span>
+        <h2>Prajwal Dahal</h2>
+      </div>
+      <div class="res-cols">
+        <div class="res-card">
+          <div class="rh">Garbage Classification</div>
+          <div class="bar-chart">
+            <div class="bar-cap"><span>Model</span><span class="legend"><span class="lg"><span class="sw"></span>Train</span><span class="lg"><span class="sw test"></span>Test</span><span class="lg"><span class="sw f1"></span>F1</span></span></div>
+            <div class="bar-row"><span class="bar-label">Baseline CNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:82%"></div></div><span class="bar-val">82</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:73%"></div></div><span class="bar-val">73</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:73%"></div></div><span class="bar-val">73</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Deeper CNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:87%"></div></div><span class="bar-val">87</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div><span class="bar-val">85</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:85%"></div></div><span class="bar-val">85</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Deeper CNN + SGD</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:66%"></div></div><span class="bar-val">66</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:67%"></div></div><span class="bar-val">67</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:67%"></div></div><span class="bar-val">67</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Ablation (Dropout)</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:77%"></div></div><span class="bar-val">77</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div><span class="bar-val">72</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:72%"></div></div><span class="bar-val">72</span></div>
+            </div></div>
+            <div class="bar-row best"><span class="bar-label">VGG16</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:93%"></div></div><span class="bar-val">93</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:95%"></div></div><span class="bar-val">95</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:95%"></div></div><span class="bar-val">95</span></div>
+            </div></div>
+          </div>
+        </div>
+        <div class="res-card nlp">
+          <div class="rh">Sarcasm Detection</div>
+          <div class="bar-chart">
+            <div class="bar-cap"><span>Model</span><span class="legend"><span class="lg"><span class="sw"></span>Train</span><span class="lg"><span class="sw test"></span>Test</span><span class="lg"><span class="sw f1"></span>F1</span></span></div>
+            <div class="bar-row"><span class="bar-label">Simple RNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:86%"></div></div><span class="bar-val">86</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:78%"></div></div><span class="bar-val">78</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:78%"></div></div><span class="bar-val">78</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">LSTM</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:91%"></div></div><span class="bar-val">91</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:79%"></div></div><span class="bar-val">79</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:79%"></div></div><span class="bar-val">79</span></div>
+            </div></div>
+            <div class="bar-row best"><span class="bar-label">LSTM + Word2Vec</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:85%"></div></div><span class="bar-val">85</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:81%"></div></div><span class="bar-val">81</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:81%"></div></div><span class="bar-val">81</span></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+      <div class="insight-box">
+        <strong>Insight:</strong> VGG16 hit the top vision score in our group at 95% test accuracy. On the NLP side, adding Word2Vec brought train and test closer, and pushed test F1 above the plain LSTM.
+      </div>
+    </section>
+
+    <!-- 4. ANKIT -->
+    <section>
+      <div class="slide-header">
+        <span class="label">02 / Results</span>
+        <h2>Ankit Guragain</h2>
+      </div>
+      <div class="res-cols">
+        <div class="res-card">
+          <div class="rh">Garbage Classification</div>
+          <div class="bar-chart">
+            <div class="bar-cap"><span>Model</span><span class="legend"><span class="lg"><span class="sw"></span>Train</span><span class="lg"><span class="sw test"></span>Test</span><span class="lg"><span class="sw f1"></span>F1</span></span></div>
+            <div class="bar-row"><span class="bar-label">Baseline CNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:80%"></div></div><span class="bar-val">80</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:73%"></div></div><span class="bar-val">73</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:72%"></div></div><span class="bar-val">72</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Deeper CNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:74%"></div></div><span class="bar-val">74</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:75%"></div></div><span class="bar-val">75</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:74%"></div></div><span class="bar-val">74</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Deeper CNN + SGD</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:67%"></div></div><span class="bar-val">67</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:69%"></div></div><span class="bar-val">69</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:69%"></div></div><span class="bar-val">69</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Ablation (No Dropout)</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:75%"></div></div><span class="bar-val">75</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:61%"></div></div><span class="bar-val">61</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:60%"></div></div><span class="bar-val">60</span></div>
+            </div></div>
+            <div class="bar-row best"><span class="bar-label">MobileNetV2</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:93%"></div></div><span class="bar-val">93</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:93%"></div></div><span class="bar-val">93</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:93%"></div></div><span class="bar-val">93</span></div>
+            </div></div>
+          </div>
+        </div>
+        <div class="res-card nlp">
+          <div class="rh">Sarcasm Detection</div>
+          <div class="bar-chart">
+            <div class="bar-cap"><span>Model</span><span class="legend"><span class="lg"><span class="sw"></span>Train</span><span class="lg"><span class="sw test"></span>Test</span><span class="lg"><span class="sw f1"></span>F1</span></span></div>
+            <div class="bar-row"><span class="bar-label">Simple RNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:99%"></div></div><span class="bar-val">99</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:78%"></div></div><span class="bar-val">78</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:78%"></div></div><span class="bar-val">78</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">LSTM</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:98%"></div></div><span class="bar-val">98</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:78%"></div></div><span class="bar-val">78</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:78%"></div></div><span class="bar-val">78</span></div>
+            </div></div>
+            <div class="bar-row best"><span class="bar-label">LSTM + GloVe</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:95%"></div></div><span class="bar-val">95</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:81%"></div></div><span class="bar-val">81</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:81%"></div></div><span class="bar-val">81</span></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+      <div class="insight-box">
+        <strong>Insight:</strong> MobileNetV2 landed at roughly 93% on both train and test, so it generalized well without overfitting. The no-dropout run showed the clearest overfit gap, which is what we expected.
+      </div>
+    </section>
+
+    <!-- 5. RAHUL -->
+    <section>
+      <div class="slide-header">
+        <span class="label">02 / Results</span>
+        <h2>Rahul Dev Banjara</h2>
+      </div>
+      <div class="res-cols">
+        <div class="res-card">
+          <div class="rh">Garbage Classification</div>
+          <div class="bar-chart">
+            <div class="bar-cap"><span>Model</span><span class="legend"><span class="lg"><span class="sw"></span>Train</span><span class="lg"><span class="sw test"></span>Test</span><span class="lg"><span class="sw f1"></span>F1</span></span></div>
+            <div class="bar-row"><span class="bar-label">Baseline CNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:87%"></div></div><span class="bar-val">87</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:67%"></div></div><span class="bar-val">67</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:66%"></div></div><span class="bar-val">66</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Deeper CNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:79%"></div></div><span class="bar-val">79</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:65%"></div></div><span class="bar-val">65</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:65%"></div></div><span class="bar-val">65</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Deeper CNN + SGD</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:84%"></div></div><span class="bar-val">84</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:69%"></div></div><span class="bar-val">69</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:69%"></div></div><span class="bar-val">69</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Ablation (Batch Norm)</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:82%"></div></div><span class="bar-val">82</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:62%"></div></div><span class="bar-val">62</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:62%"></div></div><span class="bar-val">62</span></div>
+            </div></div>
+            <div class="bar-row best"><span class="bar-label">ResNet50</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:93%"></div></div><span class="bar-val">93</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:92%"></div></div><span class="bar-val">92</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:92%"></div></div><span class="bar-val">92</span></div>
+            </div></div>
+          </div>
+        </div>
+        <div class="res-card nlp">
+          <div class="rh">Sarcasm Detection</div>
+          <div class="bar-chart">
+            <div class="bar-cap"><span>Model</span><span class="legend"><span class="lg"><span class="sw"></span>Train</span><span class="lg"><span class="sw test"></span>Test</span><span class="lg"><span class="sw f1"></span>F1</span></span></div>
+            <div class="bar-row"><span class="bar-label">Simple RNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:94%"></div></div><span class="bar-val">94</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:69%"></div></div><span class="bar-val">69</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:69%"></div></div><span class="bar-val">69</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">LSTM</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:91%"></div></div><span class="bar-val">91</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:77%"></div></div><span class="bar-val">77</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:77%"></div></div><span class="bar-val">77</span></div>
+            </div></div>
+            <div class="bar-row best"><span class="bar-label">LSTM + Word2Vec</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:93%"></div></div><span class="bar-val">93</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><span class="bar-val">80</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:80%"></div></div><span class="bar-val">80</span></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+      <div class="insight-box">
+        <strong>Insight:</strong> The scratch CNNs overfit a lot, with train scores well above test. ResNet50 closed that gap and reached about 92%. On NLP, Simple RNN struggled on longer headlines, and LSTM with Word2Vec gave the biggest jump in test accuracy.
+      </div>
+    </section>
+
+    <!-- 6. PRATIK -->
+    <section>
+      <div class="slide-header">
+        <span class="label">02 / Results</span>
+        <h2>Pratik Dhimal</h2>
+      </div>
+      <div class="res-cols">
+        <div class="res-card">
+          <div class="rh">Garbage Classification</div>
+          <div class="bar-chart">
+            <div class="bar-cap"><span>Model</span><span class="legend"><span class="lg"><span class="sw"></span>Train</span><span class="lg"><span class="sw test"></span>Test</span><span class="lg"><span class="sw f1"></span>F1</span></span></div>
+            <div class="bar-row"><span class="bar-label">Baseline CNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:76%"></div></div><span class="bar-val">76</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:73%"></div></div><span class="bar-val">73</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:72%"></div></div><span class="bar-val">72</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Deeper CNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:76%"></div></div><span class="bar-val">76</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><span class="bar-val">80</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:79%"></div></div><span class="bar-val">79</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Deeper CNN + SGD</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:68%"></div></div><span class="bar-val">68</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div><span class="bar-val">72</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:71%"></div></div><span class="bar-val">71</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">Ablation (No Dropout)</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:66%"></div></div><span class="bar-val">66</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:58%"></div></div><span class="bar-val">58</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:57%"></div></div><span class="bar-val">57</span></div>
+            </div></div>
+            <div class="bar-row best"><span class="bar-label">MobileNetV2</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:93%"></div></div><span class="bar-val">93</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:93%"></div></div><span class="bar-val">93</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:93%"></div></div><span class="bar-val">93</span></div>
+            </div></div>
+          </div>
+        </div>
+        <div class="res-card nlp">
+          <div class="rh">Sarcasm Detection</div>
+          <div class="bar-chart">
+            <div class="bar-cap"><span>Model</span><span class="legend"><span class="lg"><span class="sw"></span>Train</span><span class="lg"><span class="sw test"></span>Test</span><span class="lg"><span class="sw f1"></span>F1</span></span></div>
+            <div class="bar-row"><span class="bar-label">Simple RNN</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:99%"></div></div><span class="bar-val">99</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:81%"></div></div><span class="bar-val">81</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:81%"></div></div><span class="bar-val">81</span></div>
+            </div></div>
+            <div class="bar-row best"><span class="bar-label">LSTM</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:97%"></div></div><span class="bar-val">97</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:81%"></div></div><span class="bar-val">81</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:81%"></div></div><span class="bar-val">81</span></div>
+            </div></div>
+            <div class="bar-row"><span class="bar-label">LSTM + Word2Vec</span><div class="bar-bars">
+              <div class="bar-mini"><span class="bar-key">Tr</span><div class="bar-track"><div class="bar-fill train" style="width:89%"></div></div><span class="bar-val">89</span></div>
+              <div class="bar-mini"><span class="bar-key">Te</span><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><span class="bar-val">80</span></div>
+              <div class="bar-mini"><span class="bar-key">F1</span><div class="bar-track"><div class="bar-fill f1" style="width:80%"></div></div><span class="bar-val">80</span></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+      <div class="insight-box">
+        <strong>Insight:</strong> Deeper CNN already held up well before any transfer learning, and MobileNetV2 then pushed accuracy to the top. For NLP, the plain LSTM came out best, and pretrained embeddings did not add anything extra on this split.
+      </div>
+    </section>
+
+    <!-- 7. GROUP INSIGHTS -->
+    <section>
+      <div class="slide-header">
+        <span class="label">03 / Group Insights</span>
+        <h2>Patterns Across All Four Runs</h2>
+      </div>
+      <div class="ins-grid">
+        <div class="ins-cell">
+          <p class="ic-title">Transfer Learning Wins</p>
+          <p class="ic-text">Pretrained backbones like VGG16, ResNet50, and MobileNetV2 landed at <strong>92 to 95%</strong> test accuracy. CNNs made from scratch made upto <strong>65 to 80%</strong>.</p>
+        </div>
+        <div class="ins-cell">
+          <p class="ic-title">SGD Underperforms Adam</p>
+          <p class="ic-text">For each of us, Deeper CNN with SGD lost roughly <strong>5 to 15%</strong> test accuracy compared to Adam. Adam just converged faster on this dataset. Exception was Rahul's.</p>
+        </div>
+        <div class="ins-cell">
+          <p class="ic-title">Ablation Confirms Regularization</p>
+          <p class="ic-text">Taking out dropout or batch norm caused the biggest gap between train and test. Regularization really matters on a dataset of this size.</p>
+        </div>
+        <div class="ins-cell">
+          <p class="ic-title">Embeddings Help, Mostly</p>
+          <p class="ic-text">GloVe and Word2Vec lifted test F1 for three of the four of us on sarcasm detection by cutting overfitting. One run already peaked with plain LSTM.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. CLOSE -->
+    <section class="s-close">
+      <p class="cl-label">6CS012 / Herald College Kathmandu / May 2026</p>
+      <h2>Thank You</h2>
+      <div class="divider"></div>
+      <p class="summary">
+        Transfer learning and pretrained embeddings beat the from-scratch models, and the ablation studies showed why regularization matters.
+      </p>
+      <p class="cl-meta">Group L6CG1 &nbsp;&middot;&nbsp; Rahul, Pratik, Prajwal, Ankit</p>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/reveal.js@4.6.1/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1200,
+    height: 875,
+    hash: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    controls: true,
+    progress: true,
+    slideNumber: 'c/t',
+    margin: 0,
+    minScale: 0.3,
+    maxScale: 2.0,
+  });
+</script>
+</body>
+</html>
